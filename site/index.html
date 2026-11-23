@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SALT IMPORT TERMINAL · DAEYANG</title>
+<meta name="description" content="(주)대양 소금 수입동향 대시보드 — 관세청 품목별 국가별 수출입실적, 매일 자동 갱신">
+<meta property="og:title" content="SALT IMPORT TERMINAL · DAEYANG">
+<meta property="og:description" content="파키스탄·중국·호주 소금(HSK 2501) 수입 중량·CIF 단가 동향 · 매일 자동 갱신">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 594 684'%3E%3Cpath d='M285 0 L570 165 L570 495 L285 660 L0 495 L0 165 Z' fill='%2305080d' stroke='%23D4A841' stroke-width='40'/%3E%3Ctext x='285' y='352' text-anchor='middle' dominant-baseline='central' fill='%23D4A841' font-family='Arial Black,Arial' font-weight='900' font-size='250'%3EDY%3C/text%3E%3C/svg%3E">
+<style>html,body{margin:0;background:#020408}body{padding:10px;max-width:1400px;margin:0 auto}</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="assets/dash-shim.js"></script>
+</head>
+<body>
+<style>
+.tm{container-type:inline-size;--bg:#05080d;--pn:#0a1018;--ln:#1b2633;--tx:#c9d4e1;--mu:#5f6e80;--gr:#19e68c;--rd:#ff4d5e;--am:#ffb020;--cy:#35d0ff;--vi:#b07cff;
+  background:var(--bg);color:var(--tx);font-family:ui-monospace,"JetBrains Mono","SFMono-Regular",Menlo,Consolas,monospace;font-size:12px;border-radius:10px;padding:8px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.tm *{box-sizing:border-box}
+.tm-top{display:flex;align-items:center;gap:10px;border:1px solid var(--ln);background:var(--pn);padding:6px 10px;border-radius:6px;overflow:hidden}
+.tm-logo{color:var(--bg);background:var(--cy);font-weight:700;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.tm-name{display:flex;align-items:baseline;gap:10px;white-space:nowrap;color:var(--tx)}
+.tm-title{font-family:"Pretendard","Inter","Helvetica Neue",Arial,sans-serif;font-size:22px;font-weight:900;letter-spacing:.06em;color:#ffffff;text-shadow:0 0 14px rgba(53,208,255,.45)}
+.tm-hs{font-size:12px;font-weight:700;color:var(--cy)}
+.tm-top{flex-wrap:wrap}
+@container (max-width:640px){
+  .tm-name{flex-direction:column;align-items:flex-start;gap:2px;white-space:normal;min-width:0}
+  .tm-title{font-size:19px;letter-spacing:.04em}
+  .tm-hs{font-size:11px}
+  .tm-tickwrap{order:5;flex-basis:100%}
+  .tm-clock{margin-left:auto}
+}
+.tm-tickwrap{flex:1;overflow:hidden;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.tm-tick{display:inline-block;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.tm-tick{animation:tmscroll 28s linear infinite}}
+@keyframes tmscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tm-tick span{margin-right:32px;font-size:14px;font-weight:700}
+.tm-clock{color:var(--am);white-space:nowrap}
+.tm-warn{margin:8px 0;color:var(--am);border:1px dashed #5a4410;background:#1a1405;padding:5px 10px;border-radius:6px;font-size:11px}
+.tm-ctl{display:flex;align-items:center;gap:10px;margin:8px 0;border:1px solid var(--ln);background:var(--pn);padding:6px 10px;border-radius:6px;flex-wrap:wrap}
+.tm-btn{font:inherit;background:transparent;color:var(--gr);border:1px solid var(--gr);border-radius:4px;padding:3px 10px;cursor:pointer}
+.tm-btn:hover{background:#0f2a1e}
+.tm-range{flex:1;min-width:140px;accent-color:var(--gr)}
+.tm-sel{color:var(--gr);font-weight:700;min-width:64px}
+.tm-chips{display:flex;gap:6px}
+.tm-chip{font:inherit;background:transparent;color:var(--mu);border:1px solid var(--ln);border-radius:4px;padding:3px 8px;cursor:pointer}
+.tm-chip.on{color:var(--bg);background:var(--cy);border-color:var(--cy)}
+.tm-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px}
+.tm-p{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:8px 10px;position:relative;min-width:0}
+.tm-h{display:flex;justify-content:space-between;color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--ln);padding-bottom:5px;margin:0 0 6px}
+.tm-h b{color:var(--cy);font-weight:700}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+@container (max-width:760px){.s4,.s5,.s7,.s8{grid-column:span 12}}
+.tm-big{font-size:40px;line-height:1.05;font-weight:700;color:var(--gr);text-shadow:0 0 18px rgba(25,230,140,.35)}
+.tm-big.dn{color:var(--rd);text-shadow:0 0 18px rgba(255,77,94,.35)}
+.tm-unit{color:var(--mu);font-size:11px}
+.tm-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.tm-stat{border:1px solid var(--ln);border-radius:4px;padding:5px 7px}
+.tm-stat i{display:block;font-style:normal;color:var(--mu);font-size:10px;text-transform:uppercase}
+.tm-stat b{font-size:15px;color:var(--tx)}
+.up{color:var(--gr)}.dn{color:var(--rd)}
+.tm-chart{position:relative;min-height:190px}
+.tm-flow{position:relative;min-height:300px}
+.tm-heat{position:relative;min-height:120px}
+.tm-vol{position:relative;min-height:130px}
+.tm-tape{max-height:300px;overflow-y:auto}
+.tm-auto{display:inline-block;margin-top:4px;color:var(--gr);font-weight:700;font-size:12px}
+.tm-brand{display:flex;align-items:center;gap:8px;padding-right:10px;border-right:1px solid var(--ln)}
+.tm-dy{width:30px;height:35px;flex:none;filter:drop-shadow(0 0 6px rgba(212,168,65,.35))}
+.tm-brand-txt{display:flex;flex-direction:column;line-height:1.15;font-family:"Pretendard","Inter","Helvetica Neue",Arial,sans-serif}
+.tm-brand-txt b{color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.18em}
+.tm-brand-txt i{color:#D4A841;font-size:8px;font-style:normal;font-weight:700;letter-spacing:.22em}
+.tm-w{text-align:right;color:var(--tx)}
+.tm-row{display:grid;grid-template-columns:58px minmax(40px,1fr) 72px 56px 56px;gap:6px;align-items:center;padding:3px 4px;border-radius:3px;cursor:pointer}
+.tm-row:hover{background:#101a26}
+.tm-row.on{background:#0f2a1e;outline:1px solid #1d5a3e}
+.tm-bar{height:8px;border-radius:2px;background:linear-gradient(90deg,#0b6b45,var(--gr))}
+.tm-r{text-align:right}
+.tm .tick text{fill:var(--mu);font-size:10px;font-family:inherit}
+.tm .domain{stroke:var(--ln)}
+.tm .tick line{stroke:#132030}
+.tm-tip{position:absolute;pointer-events:none;background:#0d1621;border:1px solid var(--cy);color:var(--tx);border-radius:4px;padding:4px 7px;font-size:11px;white-space:nowrap;z-index:3;box-shadow:0 0 12px rgba(53,208,255,.25)}
+.tm-err{color:var(--rd)}
+.tm-src{margin:8px 0;color:var(--mu);border:1px solid var(--ln);background:var(--pn);padding:5px 10px;border-radius:6px;font-size:11px}
+.tm-src b{color:var(--tx)}
+.tm-note{color:var(--am);font-size:10px;min-height:14px}
+.tm-foot{color:var(--mu);font-size:10px;margin-top:8px}
+</style>
+<div class="tm" id="terminal">
+  <div class="tm-top" id="topbar">
+    <span class="tm-brand" id="brand"><svg class="tm-dy" viewBox="-12 -12 594 684" role="img" aria-label="(주)대양 DY 로고"><path d="M285 0 L570 165 L570 495 L285 660 L0 495 L0 165 Z" fill="none" stroke="#D4A841" stroke-width="30" stroke-linejoin="miter"/><text x="285" y="352" text-anchor="middle" dominant-baseline="central" fill="#D4A841" font-family="'Swis721 Blk BT','Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="250" letter-spacing="14" stroke="#D4A841" stroke-width="16" stroke-linejoin="round" paint-order="stroke">DY</text></svg><span class="tm-brand-txt"><b>DAEYANG</b><i>GREAT SALT</i></span></span>
+    <span class="tm-name"><b class="tm-title">SALT IMPORT TERMINAL</b><span class="tm-hs">// HSK <span data-draw="hs-name">—</span></span></span>
+    <div class="tm-tickwrap"><div class="tm-tick" data-draw="ticker" data-source="monthly_all"></div></div>
+    <span class="tm-clock" data-draw="clock">—</span>
+  </div>
+
+  <p class="tm-src" id="source-line">관세청 품목별 국가별 수출입실적 · 최신 자료 <b data-draw="src-latest" data-source="data_status" data-field="latest_month" data-row="0">—</b> · 수집 <b data-draw="src-updated" data-source="data_status" data-field="updated_at" data-row="0">—</b><br><span class="tm-auto">⟳ 매일 오전 8시(KST)경 자동 갱신 · 관세청 통계는 월 1회 공표</span></p>
+
+  <div class="tm-ctl" id="controls">
+    <button class="tm-btn" type="button" id="tm-play"><span data-draw="play-label">—</span></button>
+    <span class="tm-sel" data-draw="sel-month">—</span>
+    <span class="tm-note" data-draw="sel-note"></span>
+    <input class="tm-range" type="range" aria-label="조회 월" data-draw="scrub">
+    <div class="tm-chips" id="tm-items">
+      <button class="tm-chip" type="button" data-hs="ALL">2501 전체</button>
+      <button class="tm-chip" type="button" data-hs="2501001020">천일염 1020</button>
+      <button class="tm-chip" type="button" data-hs="2501001010">암염 1010</button>
+      <button class="tm-chip" type="button" data-hs="2501009010">식염 9010</button>
+      <button class="tm-chip" type="button" data-hs="2501009020">순염화나트륨 9020</button>
+      <button class="tm-chip" type="button" data-hs="2501009090">기타 9090</button>
+    </div>
+    <div class="tm-chips" id="tm-chips">
+      <button class="tm-chip" type="button" data-cc="PK">PK 파키스탄</button>
+      <button class="tm-chip" type="button" data-cc="CN">CN 중국</button>
+      <button class="tm-chip" type="button" data-cc="AU">AU 호주</button>
+    </div>
+  </div>
+
+  <div class="tm-grid">
+    <section class="tm-p s4" id="kpi">
+      <p class="tm-h"><span>UNIT PRICE · <b data-draw="k-country">—</b></span><span>USD / TON · CIF 기준</span></p>
+      <div class="tm-big" data-draw="k-price">—</div>
+      <div class="tm-note" data-draw="k-note"></div>
+      <div class="tm-unit">전월 대비 <span data-draw="k-mom">—</span> · 전년 동월 대비 <span data-draw="k-yoy">—</span></div>
+      <div class="tm-stats">
+        <div class="tm-stat"><i>수입중량 (톤)</i><b data-draw="k-weight">—</b></div>
+        <div class="tm-stat"><i>수입금액 (천 USD)</i><b data-draw="k-value">—</b></div>
+        <div class="tm-stat"><i>중량 전월 대비</i><b data-draw="k-momw">—</b></div>
+        <div class="tm-stat"><i>3개국 중 점유율 (중량)</i><b data-draw="k-share">—</b></div>
+      </div>
+    </section>
+
+    <section class="tm-p s8" id="price">
+      <p class="tm-h"><span>PRICE CURVE · <b data-draw="pc-country">—</b></span><span>CIF 단가 (USD/톤) · 클릭하면 그 달로 이동</span></p>
+      <div class="tm-chart" data-draw="price-chart" data-source="monthly_all"></div>
+    </section>
+
+    <section class="tm-p s7" id="flow">
+      <p class="tm-h"><span>IMPORT FLOW → <b>KOREA</b></span><span>입자 수 = 수입중량</span></p>
+      <div class="tm-flow" data-draw="flow" data-source="monthly_all"></div>
+    </section>
+
+    <section class="tm-p s5" id="tape">
+      <p class="tm-h"><span>MONTHLY TAPE · <b data-draw="tp-country">—</b></span><span>월 · 중량(톤) · CIF 단가($/T) · Δ</span></p>
+      <div class="tm-tape" data-draw="tape" data-source="monthly_all"></div>
+    </section>
+
+    <section class="tm-p s7" id="heat">
+      <p class="tm-h"><span>Δ PRICE HEATMAP · 전월 대비 단가 변동</span><span>최근 12개월</span></p>
+      <div class="tm-heat" data-draw="heat" data-source="monthly_all"></div>
+    </section>
+
+    <section class="tm-p s5" id="volume">
+      <p class="tm-h"><span>VOLUME · <b data-draw="vl-country">—</b></span><span>톤</span></p>
+      <div class="tm-vol" data-draw="vol" data-source="monthly_all"></div>
+    </section>
+  </div>
+  <p class="tm-foot" id="foot">단가 = 수입금액(USD) ÷ 중량(톤). 관세청 수입통계 금액은 계약 조건(FOB·CFR 등)과 관계없이 운임·보험료를 포함한 CIF 가격 기준이므로, 공급사 FOB 견적과 비교할 때는 해상운임·보험료만큼 차이가 납니다. 한 달 수입이 1톤 미만이면 샘플·소량 통관으로 보고 단가와 단가 변동에서 뺍니다. 자료가 없는 달은 수입 0으로 봅니다. 출처: 관세청 「품목별 국가별 수출입실적(GW)」, 공공데이터포털(GitHub Actions가 매일 오전 자동 수집). 관세청 통계는 월 단위로 공표됩니다.</p>
+</div>
+
+<script>
+window.SD = {
+  fmtInt: d3.format(',.0f'),
+  fmtPct: (v) => (v == null || !isFinite(v) ? '—' : (v > 0 ? '+' : '') + d3.format('.1f')(v) + '%')
+};
+
+dash.loader('imports', {
+  description: "구글 시트의 'data' 탭 표를 월·국가·세번별 행으로 읽습니다",
+  fn: ({ answer }) => {
+    let a = answer && answer.result !== undefined ? answer.result : answer;
+    if (typeof a === 'string' && a.trim().startsWith('{')) { try { a = JSON.parse(a); } catch (e) {} }
+    const text = typeof a === 'string' ? a : (a && a.fileContent) || '';
+    if (!text) throw new Error('시트 내용을 읽지 못했습니다');
+    if (/^\s*month,/.test(text)) {
+      const ls = text.trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const hd = ls[0].split(',').map((h) => h.trim());
+      const out = ls.slice(1).map((l) => { const c = l.split(','); const o = {}; hd.forEach((h, i) => { o[h] = (c[i] || '').trim(); }); return o; })
+        .filter((o) => /^\d{4}-\d{2}$/.test(o.month))
+        .map((o) => ({ month: o.month, country_code: o.country_code, country: o.country, hs_code: String(o.hs_code), item: o.item, weight_kg: Number(o.weight_kg), value_usd: Number(o.value_usd), updated_at: o.updated_at }));
+      return { columns: ['month', 'country_code', 'country', 'hs_code', 'item', 'weight_kg', 'value_usd', 'updated_at'], rows: out };
+    }
+    const start = text.indexOf('### Sheet Name: data');
+    if (start < 0) throw new Error("'data' 시트를 찾지 못했습니다");
+    const next = text.indexOf('### Sheet Name:', start + 10);
+    const sec = text.slice(start, next < 0 ? undefined : next);
+    const rng = sec.match(/Table Range:\s*A1:[A-Z]+(\d+)/);
+    const lines = sec.split('\n').filter((l) => l.trim().startsWith('|'));
+    const cells = (l) => l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim().replace(/\\_/g, '_'));
+    const body = lines.map(cells).filter((c) => !c.every((x) => x === '' || /^:?-+:?$/.test(x)));
+    const hi = body.findIndex((c) => c[0] === 'month');
+    if (hi < 0) throw new Error('머리글(month) 줄을 찾지 못했습니다');
+    const head = body[hi];
+    const rows = body.slice(hi + 1).filter((c) => /^\d{4}-\d{2}$/.test(c[0])).map((c) => {
+      const o = {};
+      head.forEach((h, i) => { o[h] = c[i]; });
+      return {
+        month: o.month, country_code: o.country_code, country: o.country,
+        hs_code: String(o.hs_code), item: o.item,
+        weight_kg: Number(o.weight_kg), value_usd: Number(o.value_usd), updated_at: o.updated_at
+      };
+    });
+    const expected = rng ? Number(rng[1]) - 1 : rows.length;
+    return { columns: ['month', 'country_code', 'country', 'hs_code', 'item', 'weight_kg', 'value_usd', 'updated_at'], rows, truncated: rows.length < expected };
+  }
+});
+
+dash.calc('monthly_all', {
+  title: '국가·세번·월별 중량, 금액, 단가와 증감률',
+  description: '자료가 없는 달은 0으로 채우고, 1톤 미만인 달은 단가를 비웁니다. 점유율은 같은 세번 3개국 합계 대비 중량 비중(%)',
+  inputs: ['imports'],
+  fn: (imports) => {
+    const MIN_KG = 1000;
+    const months = Array.from(new Set(imports.map((r) => r.month))).sort();
+    const names = {};
+    const items = {};
+    imports.forEach((r) => { names[r.country_code] = r.country; items[r.hs_code] = r.item; });
+    items.ALL = '소금 전체';
+    const by = new Map();
+    imports.forEach((r) => {
+      [r.hs_code, 'ALL'].forEach((hs) => {
+        const k = r.month + '|' + r.country_code + '|' + hs;
+        const o = by.get(k) || { weight_kg: 0, value_usd: 0 };
+        o.weight_kg += Number(r.weight_kg) || 0; o.value_usd += Number(r.value_usd) || 0;
+        by.set(k, o);
+      });
+    });
+    const pct = (a, b) => (a != null && b ? Math.round(((a - b) / b) * 1000) / 10 : null);
+    const out = [];
+    Object.keys(items).forEach((hs) => {
+      Object.keys(names).forEach((cc) => {
+        const series = months.map((m) => {
+          const r = by.get(m + '|' + cc + '|' + hs);
+          const kg = r ? Number(r.weight_kg) || 0 : 0, usd = r ? Number(r.value_usd) || 0 : 0;
+          return { month: m, kg, usd, p: kg >= MIN_KG ? usd / (kg / 1000) : null };
+        });
+        series.forEach((s, i) => {
+          const pm = i > 0 ? series[i - 1] : null;
+          const ly = i >= 12 ? series[i - 12] : null;
+          out.push({
+            month: s.month, country_code: cc, country: names[cc], hs_code: hs, item: items[hs],
+            weight_t: Math.round(s.kg / 1000), value_kusd: Math.round(s.usd / 1000),
+            price_usd_t: s.p == null ? null : Math.round(s.p),
+            mom_price_pct: pm ? pct(s.p, pm.p) : null,
+            yoy_price_pct: ly ? pct(s.p, ly.p) : null,
+            mom_weight_pct: pm && pm.kg ? pct(s.kg, pm.kg) : null,
+            raw_kg: s.kg
+          });
+        });
+      });
+    });
+    const tot = d3.rollup(out, (g) => d3.sum(g, (r) => r.raw_kg), (r) => r.month + '|' + r.hs_code);
+    out.forEach((r) => { const t = tot.get(r.month + '|' + r.hs_code); r.share_weight_pct = t ? Math.round((r.raw_kg / t) * 1000) / 10 : null; delete r.raw_kg; });
+    return out;
+  }
+});
+
+dash.calc('data_status', {
+  title: '자료 현황',
+  description: '시트에 있는 가장 최근 월과 마지막 수집 시각',
+  inputs: ['imports'],
+  fn: (imports) => [{
+    latest_month: imports.reduce((m, r) => (r.month > m ? r.month : m), ''),
+    updated_at: imports.reduce((m, r) => (String(r.updated_at) > m ? String(r.updated_at) : m), ''),
+    row_count: imports.length
+  }]
+});
+</script>
+
+<script>
+(function () {
+  const NAMES = { PK: '파키스탄', CN: '중국', AU: '호주' };
+  const ITEMS = { ALL: '소금 전체', '2501001020': '천일염', '2501001010': '암염', '2501009010': '식염', '2501009020': '순염화나트륨', '2501009090': '기타 소금' };
+  const COL = { PK: '#19e68c', CN: '#ffb020', AU: '#35d0ff' };
+  const ORDER = ['PK', 'CN', 'AU'];
+  const TM = window.TM = window.TM || {};
+  if (!TM.c) TM.c = 'PK';
+  if (!TM.hs) TM.hs = '2501001020';
+  TM.m = TM.m || null;
+  const DRAWS = ['hs-name', 'ticker', 'sel-month', 'sel-note', 'scrub', 'play-label', 'k-country', 'k-price', 'k-note', 'k-mom', 'k-yoy', 'k-weight', 'k-value', 'k-momw', 'k-share', 'pc-country', 'price-chart', 'flow', 'tp-country', 'tape', 'heat', 'vl-country', 'vol'];
+  const redraw = () => DRAWS.forEach((n) => dash.draw(n));
+
+  const rowsAll = () => { const d = dash.data('monthly_all'); return d.status === 'ok' && Array.isArray(d.data) ? d.data.filter((r) => r.hs_code === TM.hs) : null; };
+  const months = (rows) => Array.from(new Set(rows.map((r) => r.month))).sort();
+  const lastWith = (rows, c) => { const ms = months(rows); for (let i = ms.length - 1; i >= 0; i--) { const r = rows.find((x) => x.month === ms[i] && x.country_code === c); if (r && r.price_usd_t != null) return ms[i]; } return ms[ms.length - 1]; };
+  const curMonth = (rows) => { const ms = months(rows); if (TM.mAuto !== false || TM.m == null || !ms.includes(TM.m)) TM.m = lastWith(rows, TM.c); return TM.m; };
+  const get = (rows, m, c) => rows.find((r) => r.month === m && r.country_code === c);
+  const mark = (el, field, m, c) => { el.setAttribute('data-source', 'monthly_all'); el.setAttribute('data-field', field); el.setAttribute('data-where', 'month=' + m + '&country_code=' + c + '&hs_code=' + TM.hs); };
+  const signCls = (el, v) => { el.classList.toggle('up', v > 0); el.classList.toggle('dn', v < 0); };
+  const tipPlace = (tip, box, x, y) => { const w = tip.node().offsetWidth; let l = x + 12; if (l + w > box.clientWidth) l = Math.max(0, x - w - 12); tip.style('left', l + 'px').style('top', Math.max(0, y - 28) + 'px'); };
+  const err = (el) => { const p = document.createElement('p'); p.className = 'tm-err'; p.textContent = 'DATA LOAD FAILED · 시트를 불러오지 못했습니다'; el.append(p); };
+  const failed = () => dash.data('monthly_all').status === 'error';
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pr = (v) => (v == null ? '—' : SD.fmtInt(v));
+
+  const syncChips = () => {
+    document.querySelectorAll('#tm-chips .tm-chip').forEach((x) => x.classList.toggle('on', x.dataset.cc === TM.c));
+    document.querySelectorAll('#tm-items .tm-chip').forEach((x) => x.classList.toggle('on', x.dataset.hs === TM.hs));
+  };
+  syncChips();
+  document.querySelectorAll('#tm-chips .tm-chip').forEach((b) => b.addEventListener('click', () => { TM.c = b.dataset.cc; TM.mAuto = true; syncChips(); redraw(); }));
+  document.querySelectorAll('#tm-items .tm-chip').forEach((b) => b.addEventListener('click', () => { TM.hs = b.dataset.hs; TM.mAuto = true; syncChips(); redraw(); }));
+  document.querySelectorAll('#tm-play').forEach((btn) => btn.addEventListener('click', () => {
+    TM.playing = !TM.playing;
+    clearInterval(TM.timer);
+    if (TM.playing) {
+      TM.timer = setInterval(() => {
+        const rows = rowsAll(); if (!rows) return;
+        const ms = months(rows); const i = ms.indexOf(curMonth(rows));
+        TM.m = ms[(i + 1) % ms.length]; TM.mAuto = false; redraw();
+      }, 900);
+    }
+    dash.draw('play-label');
+  }));
+  TM.select = (m, c) => { if (m) { TM.m = m; TM.mAuto = false; } if (c) TM.c = c; syncChips(); redraw(); };
+
+  dash.draw('play-label', (el) => { el.textContent = TM.playing ? '❚❚ PAUSE' : '▶ PLAY'; });
+  dash.draw('hs-name', (el) => { el.textContent = TM.hs === 'ALL' ? '2501 소금 전체' : TM.hs.slice(0, 4) + '.' + TM.hs.slice(4, 6) + '-' + TM.hs.slice(6) + ' ' + ITEMS[TM.hs]; });
+  dash.draw('sel-note', (el) => {
+    const rows = rowsAll();
+    if (!rows) { el.textContent = ''; return; }
+    const ms = months(rows), latest = ms[ms.length - 1], m = curMonth(rows);
+    el.textContent = TM.mAuto !== false && m !== latest ? `최신월 ${latest} 자료 없음 → 마지막 수입월 표시` : '';
+  });
+
+  dash.draw('clock', {
+    mount: (el) => {
+      const f = () => { el.textContent = new Date().toLocaleTimeString('ko-KR', { hour12: false, timeZone: 'Asia/Seoul' }) + ' KST'; };
+      f(); return setInterval(f, 1000);
+    },
+    update: () => {},
+    unmount: (el, t) => clearInterval(t)
+  });
+
+  const statusText = (field) => (el) => {
+    const d = dash.data('data_status');
+    if (d.status !== 'ok' || !d.data || !d.data.length) { el.textContent = '—'; return; }
+    el.textContent = d.data[0][field] || '—';
+  };
+  dash.draw('src-latest', statusText('latest_month'));
+  dash.draw('src-updated', statusText('updated_at'));
+
+  dash.draw('ticker', (el) => {
+    const rows = rowsAll(); el.replaceChildren();
+    if (!rows) { el.textContent = failed() ? 'DATA LOAD FAILED' : '—'; return; }
+    const items = ORDER.map((c) => get(rows, lastWith(rows, c), c)).filter(Boolean);
+    for (let k = 0; k < 2; k++) items.forEach((r) => {
+      const s = document.createElement('span');
+      const a = r.mom_price_pct;
+      s.textContent = `${r.country_code} ${NAMES[r.country_code]} ${ITEMS[TM.hs]} ${pr(r.price_usd_t)} USD/T ${a > 0 ? '▲' : a < 0 ? '▼' : '■'}${SD.fmtPct(a)}  ·  ${SD.fmtInt(r.weight_t)}T  [${r.month}]`;
+      s.style.color = a > 0 ? '#19e68c' : a < 0 ? '#ff4d5e' : '#c9d4e1';
+      el.append(s);
+    });
+  });
+
+  dash.draw('sel-month', (el) => { const rows = rowsAll(); el.textContent = rows ? curMonth(rows) : '—'; });
+  dash.draw('scrub', (el) => {
+    const rows = rowsAll(); if (!rows) { el.disabled = true; return; }
+    const ms = months(rows); el.disabled = false;
+    el.min = 0; el.max = ms.length - 1; el.step = 1; el.value = ms.indexOf(curMonth(rows));
+    el.oninput = () => { TM.m = ms[+el.value]; TM.mAuto = false; redraw(); };
+  });
+
+  const txt = (name, fn) => dash.draw(name, (el) => {
+    const rows = rowsAll();
+    if (!rows) { el.textContent = '—'; return; }
+    const m = curMonth(rows), r = get(rows, m, TM.c);
+    if (!r) { el.textContent = '—'; return; }
+    fn(el, r, m);
+  });
+  ['k-country', 'pc-country', 'tp-country', 'vl-country'].forEach((n) => txt(n, (el, r) => { el.textContent = r.country_code + ' ' + NAMES[r.country_code] + ' · ' + ITEMS[TM.hs]; }));
+  txt('k-price', (el, r, m) => { mark(el, 'price_usd_t', m, r.country_code); el.textContent = r.price_usd_t == null ? '—' : '$' + SD.fmtInt(r.price_usd_t); el.classList.toggle('dn', r.mom_price_pct < 0); });
+  txt('k-note', (el, r) => { el.textContent = r.price_usd_t == null ? '수입 없음 또는 1톤 미만 소량 통관 — 단가 제외' : ''; });
+  txt('k-mom', (el, r, m) => { mark(el, 'mom_price_pct', m, r.country_code); el.textContent = SD.fmtPct(r.mom_price_pct); signCls(el, r.mom_price_pct); });
+  txt('k-yoy', (el, r, m) => { mark(el, 'yoy_price_pct', m, r.country_code); el.textContent = SD.fmtPct(r.yoy_price_pct); signCls(el, r.yoy_price_pct); });
+  txt('k-weight', (el, r, m) => { mark(el, 'weight_t', m, r.country_code); el.textContent = SD.fmtInt(r.weight_t); });
+  txt('k-value', (el, r, m) => { mark(el, 'value_kusd', m, r.country_code); el.textContent = SD.fmtInt(r.value_kusd); });
+  txt('k-momw', (el, r, m) => { mark(el, 'mom_weight_pct', m, r.country_code); el.textContent = SD.fmtPct(r.mom_weight_pct); signCls(el, r.mom_weight_pct); });
+  txt('k-share', (el, r, m) => { mark(el, 'share_weight_pct', m, r.country_code); el.textContent = r.share_weight_pct == null ? '—' : d3.format('.1f')(r.share_weight_pct) + '%'; });
+
+  // price curve
+  dash.draw('price-chart', (el) => {
+    el.replaceChildren();
+    if (failed()) { err(el); return; }
+    const rows = rowsAll(); if (!rows) { el.textContent = '—'; return; }
+    const sel = curMonth(rows);
+    const data = rows.filter((r) => r.country_code === TM.c);
+    const valid = data.filter((r) => r.price_usd_t != null);
+    if (!valid.length) { const p = document.createElement('p'); p.className = 'tm-note'; p.textContent = '이 기간에 단가를 계산할 수입이 없습니다'; el.append(p); return; }
+    const W = el.clientWidth || 600, H = 200, m = { t: 10, r: 12, b: 22, l: 48 };
+    const x = d3.scalePoint().domain(data.map((r) => r.month)).range([m.l, W - m.r]);
+    const y = d3.scaleLinear().domain(d3.extent(valid, (r) => r.price_usd_t)).nice().range([H - m.b, m.t]);
+    const col = COL[TM.c];
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', NAMES[TM.c] + ' ' + ITEMS[TM.hs] + ' 월별 수입단가 추이');
+    const gid = 'tmg' + TM.c + TM.hs;
+    const g = svg.append('defs').append('linearGradient').attr('id', gid).attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 1);
+    g.append('stop').attr('offset', '0%').attr('stop-color', col).attr('stop-opacity', 0.35);
+    g.append('stop').attr('offset', '100%').attr('stop-color', col).attr('stop-opacity', 0);
+    const step = Math.ceil(data.length / Math.max(2, Math.floor((W - m.l - m.r) / 60)));
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(data.map((r) => r.month).filter((_, i) => i % step === 0)).tickFormat((s) => s.slice(2)).tickSizeOuter(0));
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r))).call((s) => s.select('.domain').remove());
+    const def = (r) => r.price_usd_t != null;
+    svg.append('path').datum(data).attr('d', d3.area().defined(def).x((r) => x(r.month)).y0(H - m.b).y1((r) => y(r.price_usd_t))).attr('fill', `url(#${gid})`);
+    svg.append('path').datum(data).attr('d', d3.line().defined(def).x((r) => x(r.month)).y((r) => y(r.price_usd_t))).style('fill', 'none').style('stroke', col).style('stroke-width', 2).style('filter', `drop-shadow(0 0 4px ${col})`);
+    svg.append('g').selectAll('circle').data(valid).join('circle').attr('cx', (r) => x(r.month)).attr('cy', (r) => y(r.price_usd_t)).attr('r', 2).style('fill', col);
+    svg.append('line').attr('x1', x(sel)).attr('x2', x(sel)).attr('y1', m.t).attr('y2', H - m.b).style('stroke', '#ffffff').style('stroke-opacity', 0.25).style('stroke-dasharray', '3 3');
+    const sr = valid.find((r) => r.month === sel);
+    if (sr) svg.append('circle').attr('cx', x(sel)).attr('cy', y(sr.price_usd_t)).attr('r', 5).style('fill', '#05080d').style('stroke', col).style('stroke-width', 2);
+    const tip = d3.select(el).append('div').attr('class', 'tm-tip').style('opacity', 0);
+    const cross = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).style('stroke', '#35d0ff').style('stroke-opacity', 0).style('pointer-events', 'none');
+    svg.append('g').selectAll('rect').data(data).join('rect')
+      .attr('x', (r) => x(r.month) - x.step() / 2).attr('width', x.step()).attr('y', m.t).attr('height', H - m.t - m.b).style('fill', 'transparent').style('cursor', 'pointer')
+      .on('pointerenter pointermove', (ev, r) => { cross.attr('x1', x(r.month)).attr('x2', x(r.month)).style('stroke-opacity', 0.6); tip.style('opacity', 1).text(r.price_usd_t == null ? `${r.month} · 단가 없음 (${SD.fmtInt(r.weight_t)}T)` : `${r.month} · ${SD.fmtInt(r.price_usd_t)} USD/T · ${SD.fmtPct(r.mom_price_pct)}`); const [px, py] = d3.pointer(ev, el); tipPlace(tip, el, px, py); })
+      .on('pointerleave', () => { cross.style('stroke-opacity', 0); tip.style('opacity', 0); })
+      .on('click', (ev, r) => TM.select(r.month));
+  });
+
+  // flow map
+  dash.draw('flow', {
+    mount: (el) => {
+      el.replaceChildren();
+      const svg = d3.select(el).append('svg').attr('width', '100%').attr('role', 'img').attr('aria-label', '국가별 수입 흐름: 입자 수가 수입중량을 나타냄');
+      const tip = d3.select(el).append('div').attr('class', 'tm-tip').style('opacity', 0);
+      const st = { svg, tip, links: [], parts: [], raf: null, last: 0 };
+      const tickFn = (ts) => {
+        const dt = Math.min(64, ts - (st.last || ts)); st.last = ts;
+        st.links.forEach((L) => {
+          L.acc += L.rate * dt;
+          while (L.acc >= 1) { L.acc -= 1; st.parts.push({ L, t: 0, sp: 0.00035 + Math.random() * 0.00025, r: 1 + Math.random() * 1.8 }); }
+        });
+        st.parts.forEach((p) => { p.t += p.sp * dt; });
+        st.parts = st.parts.filter((p) => p.t < 1);
+        if (st.pg) st.pg.selectAll('circle').data(st.parts).join('circle').attr('r', (p) => p.r).style('fill', (p) => p.L.col).style('opacity', (p) => (p.L.on ? 0.9 : 0.25) * Math.sin(Math.PI * p.t) + 0.1)
+          .attr('cx', (p) => p.L.pts[Math.floor(p.t * (p.L.pts.length - 1))][0]).attr('cy', (p) => p.L.pts[Math.floor(p.t * (p.L.pts.length - 1))][1]);
+        st.raf = requestAnimationFrame(tickFn);
+      };
+      st.start = () => { if (!reduce && !st.raf) st.raf = requestAnimationFrame(tickFn); };
+      return st;
+    },
+    update: (el, st) => {
+      const rows = rowsAll();
+      st.svg.selectAll('*').remove(); st.links = []; st.parts = []; st.pg = null;
+      if (!rows) { if (failed()) st.svg.append('text').attr('x', 10).attr('y', 20).style('fill', '#ff4d5e').text('DATA LOAD FAILED'); return; }
+      const m = curMonth(rows);
+      const W = el.clientWidth || 500, H = 300;
+      st.svg.attr('viewBox', `0 0 ${W} ${H}`);
+      const cx = W * 0.72, cy = H / 2;
+      const rg = st.svg.append('defs').append('radialGradient').attr('id', 'tmcore');
+      rg.append('stop').attr('offset', '0%').attr('stop-color', '#35d0ff').attr('stop-opacity', 0.9);
+      rg.append('stop').attr('offset', '100%').attr('stop-color', '#35d0ff').attr('stop-opacity', 0);
+      [30, 60, 95, 135].forEach((rr) => st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', rr).style('fill', 'none').style('stroke', '#132030'));
+      const here = ORDER.map((c) => get(rows, m, c)).filter(Boolean);
+      const maxW = d3.max(here, (r) => r.weight_t) || 0;
+      const lp = st.svg.append('g');
+      st.pg = st.svg.append('g');
+      here.forEach((r, i) => {
+        const sx = W * 0.12, sy = H * (0.2 + 0.3 * i);
+        const path = d3.path(); path.moveTo(sx, sy); path.bezierCurveTo(W * 0.4, sy, W * 0.45, cy, cx, cy);
+        const on = r.country_code === TM.c;
+        const col = COL[r.country_code];
+        const share = maxW ? r.weight_t / maxW : 0;
+        const pEl = lp.append('path').attr('d', path.toString()).style('fill', 'none').style('stroke', col).style('stroke-opacity', on ? 0.55 : 0.15).style('stroke-width', 1 + 7 * share);
+        const len = pEl.node().getTotalLength(); const pts = d3.range(80).map((k) => { const q = pEl.node().getPointAtLength((k / 79) * len); return [q.x, q.y]; });
+        st.links.push({ col, on, pts, rate: share * 0.06 * (on ? 1.4 : 0.8), acc: 0 });
+        const node = st.svg.append('g').attr('transform', `translate(${sx},${sy})`).style('cursor', 'pointer')
+          .on('click', () => TM.select(null, r.country_code))
+          .on('pointerenter pointermove', (ev) => { st.tip.style('opacity', 1).text(`${r.country_code} ${NAMES[r.country_code]} · ${SD.fmtInt(r.weight_t)}T · ${pr(r.price_usd_t)} USD/T · 점유 ${r.share_weight_pct == null ? '—' : d3.format('.1f')(r.share_weight_pct) + '%'}`); const [px, py] = d3.pointer(ev, el); tipPlace(st.tip, el, px, py); })
+          .on('pointerleave', () => st.tip.style('opacity', 0));
+        node.append('circle').attr('r', on ? 16 : 12).style('fill', '#05080d').style('stroke', col).style('stroke-width', on ? 2.5 : 1.2).style('filter', on ? `drop-shadow(0 0 6px ${col})` : null);
+        node.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', col).style('font-size', '10px').style('font-family', 'inherit').text(r.country_code);
+        node.append('text').attr('x', 22).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '10px').style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
+        node.append('text').attr('x', 22).attr('dy', '1.1em').style('fill', '#5f6e80').style('font-size', '10px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
+        if (reduce && share > 0) pts.filter((_, k) => k % 8 === 4).forEach((q) => st.pg.append('circle').attr('cx', q[0]).attr('cy', q[1]).attr('r', 1.6).style('fill', col).style('opacity', on ? 0.9 : 0.3));
+      });
+      st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 46).style('fill', 'url(#tmcore)').style('opacity', 0.35);
+      st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 18).style('fill', '#05080d').style('stroke', '#35d0ff').style('stroke-width', 2);
+      st.svg.append('text').attr('x', cx).attr('y', cy).attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', '#35d0ff').style('font-size', '10px').style('font-family', 'inherit').text('KR');
+      st.svg.append('text').attr('x', cx).attr('y', cy + 36).attr('text-anchor', 'middle').style('fill', '#c9d4e1').style('font-size', '11px').style('font-family', 'inherit').text(`TOTAL ${SD.fmtInt(d3.sum(here, (r) => r.weight_t))} T`);
+      st.svg.append('text').attr('x', cx).attr('y', cy + 50).attr('text-anchor', 'middle').style('fill', '#5f6e80').style('font-size', '10px').style('font-family', 'inherit').text(m + ' · ' + ITEMS[TM.hs]);
+      st.pg.raise();
+      st.start();
+    },
+    unmount: (el, st) => { if (st && st.raf) cancelAnimationFrame(st.raf); }
+  });
+
+  // tape
+  dash.draw('tape', (el) => {
+    el.replaceChildren();
+    if (failed()) { err(el); return; }
+    const rows = rowsAll(); if (!rows) { el.textContent = '—'; return; }
+    const sel = curMonth(rows);
+    const data = rows.filter((r) => r.country_code === TM.c).slice().reverse();
+    const maxW = d3.max(data, (r) => r.weight_t) || 1;
+    data.forEach((r) => {
+      const row = document.createElement('div'); row.className = 'tm-row' + (r.month === sel ? ' on' : '');
+      const a = document.createElement('span'); a.textContent = r.month;
+      const bw = document.createElement('div'); const b = document.createElement('div'); b.className = 'tm-bar'; b.style.width = (100 * r.weight_t / maxW) + '%'; bw.append(b); bw.title = SD.fmtInt(r.weight_t) + ' T';
+      const w = document.createElement('span'); w.className = 'tm-w'; w.textContent = SD.fmtInt(r.weight_t) + 'T';
+      const c = document.createElement('span'); c.className = 'tm-r'; c.textContent = pr(r.price_usd_t);
+      const e = document.createElement('span'); e.className = 'tm-r ' + (r.mom_price_pct > 0 ? 'up' : r.mom_price_pct < 0 ? 'dn' : ''); e.textContent = SD.fmtPct(r.mom_price_pct);
+      row.append(a, bw, w, c, e);
+      row.addEventListener('click', () => TM.select(r.month));
+      el.append(row);
+    });
+  });
+
+  // heatmap
+  dash.draw('heat', (el) => {
+    el.replaceChildren();
+    if (failed()) { err(el); return; }
+    const rows = rowsAll(); if (!rows) { el.textContent = '—'; return; }
+    const sel = curMonth(rows);
+    const ms = months(rows).slice(-12);
+    const W = el.clientWidth || 500, lab = 30, gap = 3, ch = 30;
+    const cw = Math.max(16, (W - lab - gap * ms.length) / ms.length);
+    const H = ORDER.length * (ch + gap) + 18;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', '국가·월별 전월 대비 단가 변동 히트맵');
+    const tip = d3.select(el).append('div').attr('class', 'tm-tip').style('opacity', 0);
+    const vals = rows.filter((r) => ms.includes(r.month) && r.mom_price_pct != null).map((r) => Math.abs(r.mom_price_pct));
+    const ext = Math.min(50, d3.quantile(vals.sort(d3.ascending), 0.9) || 1);
+    ORDER.forEach((c, i) => {
+      svg.append('text').attr('x', 0).attr('y', i * (ch + gap) + ch / 2).attr('dy', '0.35em').style('fill', COL[c]).style('font-size', '10px').style('font-family', 'inherit').text(c);
+      ms.forEach((m, j) => {
+        const r = get(rows, m, c); if (!r) return;
+        const v = r.mom_price_pct, a = v == null ? 0 : 0.15 + 0.85 * Math.min(1, Math.abs(v) / ext);
+        const gx = lab + j * (cw + gap), gy = i * (ch + gap);
+        const g = svg.append('g').style('cursor', 'pointer')
+          .on('click', () => TM.select(m, c))
+          .on('pointerenter pointermove', (ev) => { tip.style('opacity', 1).text(`${c} ${m} · Δ ${SD.fmtPct(v)} · ${pr(r.price_usd_t)} USD/T · ${SD.fmtInt(r.weight_t)}T`); const [px, py] = d3.pointer(ev, el); tipPlace(tip, el, px, py); })
+          .on('pointerleave', () => tip.style('opacity', 0));
+        g.append('rect').attr('x', gx).attr('y', gy).attr('width', cw).attr('height', ch).attr('rx', 2)
+          .style('fill', v == null ? '#111a25' : v >= 0 ? `rgba(25,230,140,${a})` : `rgba(255,77,94,${a})`)
+          .style('stroke', m === sel && c === TM.c ? '#ffffff' : 'none').style('stroke-width', 1.5);
+        if (cw >= 30) g.append('text').attr('x', gx + cw / 2).attr('y', gy + ch / 2).attr('dy', '0.35em').attr('text-anchor', 'middle').style('fill', v == null ? '#5f6e80' : '#05080d').style('font-size', '9px').style('font-weight', 700).style('font-family', 'inherit').text(v == null ? '—' : d3.format('+.0f')(v));
+      });
+    });
+    const every = Math.ceil(ms.length / Math.max(2, Math.floor(W / 70)));
+    ms.forEach((m, j) => { if (j % every === 0) svg.append('text').attr('x', lab + j * (cw + gap) + cw / 2).attr('y', H - 4).attr('text-anchor', 'middle').style('fill', '#5f6e80').style('font-size', '9px').style('font-family', 'inherit').text(m.slice(2)); });
+  });
+
+  // volume
+  dash.draw('vol', (el) => {
+    el.replaceChildren();
+    if (failed()) { err(el); return; }
+    const rows = rowsAll(); if (!rows) { el.textContent = '—'; return; }
+    const sel = curMonth(rows);
+    const data = rows.filter((r) => r.country_code === TM.c);
+    const W = el.clientWidth || 400, H = 140, m = { t: 8, r: 6, b: 20, l: 40 };
+    const x = d3.scaleBand().domain(data.map((r) => r.month)).range([m.l, W - m.r]).padding(0.25);
+    const y = d3.scaleLinear().domain([0, d3.max(data, (r) => r.weight_t) || 1]).nice().range([H - m.b, m.t]);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', NAMES[TM.c] + ' ' + ITEMS[TM.hs] + ' 월별 수입중량 막대');
+    const step = Math.ceil(data.length / Math.max(2, Math.floor((W - m.l - m.r) / 56)));
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickValues(data.map((r) => r.month).filter((_, i) => i % step === 0)).tickFormat((s) => s.slice(2)).tickSizeOuter(0));
+    svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format('~s')).tickSize(-(W - m.l - m.r))).call((s) => s.select('.domain').remove());
+    const col = COL[TM.c];
+    const tip = d3.select(el).append('div').attr('class', 'tm-tip').style('opacity', 0);
+    svg.append('g').selectAll('rect').data(data).join('rect')
+      .attr('x', (r) => x(r.month)).attr('width', x.bandwidth()).attr('y', (r) => y(r.weight_t)).attr('height', (r) => y(0) - y(r.weight_t))
+      .style('fill', col).style('opacity', (r) => (r.month === sel ? 1 : 0.35));
+    svg.append('g').selectAll('rect').data(data).join('rect')
+      .attr('x', (r) => x(r.month) - x.step() * x.paddingInner() / 2).attr('width', x.step()).attr('y', m.t).attr('height', H - m.t - m.b).style('fill', 'transparent').style('cursor', 'pointer')
+      .on('pointerenter pointermove', (ev, r) => { tip.style('opacity', 1).text(`${r.month} · ${SD.fmtInt(r.weight_t)} T · ${SD.fmtInt(r.value_kusd)}K USD`); const [px, py] = d3.pointer(ev, el); tipPlace(tip, el, px, py); })
+      .on('pointerleave', () => tip.style('opacity', 0))
+      .on('click', (ev, r) => TM.select(r.month));
+  });
+})();
+</script>
+
+<script>dash.load('data/salt_import_data.csv');</script>
+</body>
+</html>
