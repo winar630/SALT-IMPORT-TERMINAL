@@ -52,8 +52,13 @@
 .tm-h b{color:var(--cy);font-weight:700}
 .s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
 @container (max-width:760px){.s4,.s5,.s7,.s8{grid-column:span 12}}
-.tm-big{font-size:40px;line-height:1.05;font-weight:700;color:var(--gr);text-shadow:0 0 18px rgba(25,230,140,.35)}
-.tm-big.dn{color:var(--rd);text-shadow:0 0 18px rgba(255,77,94,.35)}
+.tm-big{font-size:40px;line-height:1.05;font-weight:700;color:var(--gr);--gl:25,230,140;
+  text-shadow:0 0 2px rgba(255,255,255,.55),0 0 8px rgba(var(--gl),.9),0 0 18px rgba(var(--gl),.6),0 0 36px rgba(var(--gl),.4),0 0 64px rgba(var(--gl),.25)}
+.tm-big.dn{--gl:255,77,94}
+@media (prefers-reduced-motion:no-preference){.tm-big{animation:tmhalo 2.8s ease-in-out infinite}}
+@keyframes tmhalo{0%,100%{text-shadow:0 0 2px rgba(255,255,255,.5),0 0 8px rgba(var(--gl),.85),0 0 18px rgba(var(--gl),.55),0 0 36px rgba(var(--gl),.35),0 0 60px rgba(var(--gl),.2)}
+  50%{text-shadow:0 0 3px rgba(255,255,255,.8),0 0 12px rgba(var(--gl),1),0 0 26px rgba(var(--gl),.75),0 0 52px rgba(var(--gl),.5),0 0 90px rgba(var(--gl),.32)}}
+.tm-big.dn{color:var(--rd)}
 .tm-unit{color:var(--mu);font-size:11px}
 .tm-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .tm-stat{border:1px solid var(--ln);border-radius:4px;padding:5px 7px}
@@ -403,6 +408,22 @@ dash.calc('data_status', {
     svg.append('path').datum(data).attr('d', d3.area().defined(def).x((r) => x(r.month)).y0(H - m.b).y1((r) => y(r.price_usd_t))).attr('fill', `url(#${gid})`);
     svg.append('path').datum(data).attr('d', d3.line().defined(def).x((r) => x(r.month)).y((r) => y(r.price_usd_t))).style('fill', 'none').style('stroke', col).style('stroke-width', 2).style('filter', `drop-shadow(0 0 4px ${col})`);
     svg.append('g').selectAll('circle').data(valid).join('circle').attr('cx', (r) => x(r.month)).attr('cy', (r) => y(r.price_usd_t)).attr('r', 2).style('fill', col);
+    if (!reduce) {
+      const sid = 'tmsweep' + TM.c + TM.hs, band = Math.max(80, (W - m.l - m.r) * 0.18);
+      const sg = svg.select('defs').append('linearGradient').attr('id', sid).attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', m.l - band).attr('x2', m.l).attr('y1', 0).attr('y2', 0);
+      sg.append('stop').attr('offset', '0%').attr('stop-color', '#ffffff').attr('stop-opacity', 0);
+      sg.append('stop').attr('offset', '50%').attr('stop-color', '#ffffff').attr('stop-opacity', 1);
+      sg.append('stop').attr('offset', '100%').attr('stop-color', '#ffffff').attr('stop-opacity', 0);
+      const dist = (W - m.r) - m.l + band;
+      sg.append('animateTransform').attr('attributeName', 'gradientTransform').attr('type', 'translate')
+        .attr('from', '0 0').attr('to', dist + ' 0').attr('dur', '3.2s').attr('repeatCount', 'indefinite');
+      const lineD = d3.line().defined(def).x((r) => x(r.month)).y((r) => y(r.price_usd_t))(data);
+      svg.append('path').attr('d', lineD).style('fill', 'none').style('stroke', `url(#${sid})`).style('stroke-width', 7).style('stroke-linecap', 'round')
+        .style('opacity', 0.55).style('filter', 'blur(3px)').style('pointer-events', 'none');
+      svg.append('path').attr('d', lineD).style('fill', 'none').style('stroke', `url(#${sid})`).style('stroke-width', 2.5).style('stroke-linecap', 'round')
+        .style('filter', `drop-shadow(0 0 6px ${col}) drop-shadow(0 0 2px #ffffff)`).style('pointer-events', 'none');
+    }
     svg.append('line').attr('x1', x(sel)).attr('x2', x(sel)).attr('y1', m.t).attr('y2', H - m.b).style('stroke', '#ffffff').style('stroke-opacity', 0.25).style('stroke-dasharray', '3 3');
     const sr = valid.find((r) => r.month === sel);
     if (sr) svg.append('circle').attr('cx', x(sel)).attr('cy', y(sr.price_usd_t)).attr('r', 5).style('fill', '#05080d').style('stroke', col).style('stroke-width', 2);
@@ -426,7 +447,7 @@ dash.calc('data_status', {
         const dt = Math.min(64, ts - (st.last || ts)); st.last = ts;
         st.links.forEach((L) => {
           L.acc += L.rate * dt;
-          while (L.acc >= 1) { L.acc -= 1; st.parts.push({ L, t: 0, sp: 0.00035 + Math.random() * 0.00025, r: 1 + Math.random() * 1.8 }); }
+          while (L.acc >= 1) { L.acc -= 1; st.parts.push({ L, t: 0, sp: 0.00035 + Math.random() * 0.00025, r: (1 + Math.random() * 1.8) * 1.3 }); }
         });
         st.parts.forEach((p) => { p.t += p.sp * dt; });
         st.parts = st.parts.filter((p) => p.t < 1);
@@ -454,29 +475,29 @@ dash.calc('data_status', {
       const lp = st.svg.append('g');
       st.pg = st.svg.append('g');
       here.forEach((r, i) => {
-        const sx = W * 0.12, sy = H * (0.2 + 0.3 * i);
+        const sx = W * 0.1, sy = H * (0.2 + 0.3 * i);
         const path = d3.path(); path.moveTo(sx, sy); path.bezierCurveTo(W * 0.4, sy, W * 0.45, cy, cx, cy);
         const on = r.country_code === TM.c;
         const col = COL[r.country_code];
         const share = maxW ? r.weight_t / maxW : 0;
-        const pEl = lp.append('path').attr('d', path.toString()).style('fill', 'none').style('stroke', col).style('stroke-opacity', on ? 0.55 : 0.15).style('stroke-width', 1 + 7 * share);
+        const pEl = lp.append('path').attr('d', path.toString()).style('fill', 'none').style('stroke', col).style('stroke-opacity', on ? 0.55 : 0.15).style('stroke-width', (1 + 7 * share) * 1.3);
         const len = pEl.node().getTotalLength(); const pts = d3.range(80).map((k) => { const q = pEl.node().getPointAtLength((k / 79) * len); return [q.x, q.y]; });
         st.links.push({ col, on, pts, rate: share * 0.06 * (on ? 1.4 : 0.8), acc: 0 });
         const node = st.svg.append('g').attr('transform', `translate(${sx},${sy})`).style('cursor', 'pointer')
           .on('click', () => TM.select(null, r.country_code))
           .on('pointerenter pointermove', (ev) => { st.tip.style('opacity', 1).text(`${r.country_code} ${NAMES[r.country_code]} · ${SD.fmtInt(r.weight_t)}T · ${pr(r.price_usd_t)} USD/T · 점유 ${r.share_weight_pct == null ? '—' : d3.format('.1f')(r.share_weight_pct) + '%'}`); const [px, py] = d3.pointer(ev, el); tipPlace(st.tip, el, px, py); })
           .on('pointerleave', () => st.tip.style('opacity', 0));
-        node.append('circle').attr('r', on ? 16 : 12).style('fill', '#05080d').style('stroke', col).style('stroke-width', on ? 2.5 : 1.2).style('filter', on ? `drop-shadow(0 0 6px ${col})` : null);
-        node.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', col).style('font-size', '10px').style('font-family', 'inherit').text(r.country_code);
-        node.append('text').attr('x', 22).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '10px').style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
-        node.append('text').attr('x', 22).attr('dy', '1.1em').style('fill', '#5f6e80').style('font-size', '10px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
-        if (reduce && share > 0) pts.filter((_, k) => k % 8 === 4).forEach((q) => st.pg.append('circle').attr('cx', q[0]).attr('cy', q[1]).attr('r', 1.6).style('fill', col).style('opacity', on ? 0.9 : 0.3));
+        node.append('circle').attr('r', on ? 20 : 16).style('fill', '#05080d').style('stroke', col).style('stroke-width', on ? 2.5 : 1.2).style('filter', on ? `drop-shadow(0 0 6px ${col})` : null);
+        node.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', col).style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text(r.country_code);
+        node.append('text').attr('x', 28).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
+        node.append('text').attr('x', 28).attr('dy', '1.1em').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
+        if (reduce && share > 0) pts.filter((_, k) => k % 8 === 4).forEach((q) => st.pg.append('circle').attr('cx', q[0]).attr('cy', q[1]).attr('r', 2.1).style('fill', col).style('opacity', on ? 0.9 : 0.3));
       });
       st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 46).style('fill', 'url(#tmcore)').style('opacity', 0.35);
-      st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 18).style('fill', '#05080d').style('stroke', '#35d0ff').style('stroke-width', 2);
-      st.svg.append('text').attr('x', cx).attr('y', cy).attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', '#35d0ff').style('font-size', '10px').style('font-family', 'inherit').text('KR');
-      st.svg.append('text').attr('x', cx).attr('y', cy + 36).attr('text-anchor', 'middle').style('fill', '#c9d4e1').style('font-size', '11px').style('font-family', 'inherit').text(`TOTAL ${SD.fmtInt(d3.sum(here, (r) => r.weight_t))} T`);
-      st.svg.append('text').attr('x', cx).attr('y', cy + 50).attr('text-anchor', 'middle').style('fill', '#5f6e80').style('font-size', '10px').style('font-family', 'inherit').text(m + ' · ' + ITEMS[TM.hs]);
+      st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 23).style('fill', '#05080d').style('stroke', '#35d0ff').style('stroke-width', 2);
+      st.svg.append('text').attr('x', cx).attr('y', cy).attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', '#35d0ff').style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text('KR');
+      st.svg.append('text').attr('x', cx).attr('y', cy + 44).attr('text-anchor', 'middle').style('fill', '#c9d4e1').style('font-size', '14px').style('font-weight', 700).style('font-family', 'inherit').text(`TOTAL ${SD.fmtInt(d3.sum(here, (r) => r.weight_t))} T`);
+      st.svg.append('text').attr('x', cx).attr('y', cy + 62).attr('text-anchor', 'middle').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(m + ' · ' + ITEMS[TM.hs]);
       st.pg.raise();
       st.start();
     },
