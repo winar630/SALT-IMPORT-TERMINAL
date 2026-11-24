@@ -9,7 +9,18 @@
 <meta property="og:description" content="파키스탄·중국·호주 소금(HSK 2501) 수입 중량·CIF 단가 동향 · 매일 자동 갱신">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 594 684'%3E%3Cpath d='M285 0 L570 165 L570 495 L285 660 L0 495 L0 165 Z' fill='%2305080d' stroke='%23D4A841' stroke-width='40'/%3E%3Ctext x='285' y='352' text-anchor='middle' dominant-baseline='central' fill='%23D4A841' font-family='Arial Black,Arial' font-weight='900' font-size='250'%3EDY%3C/text%3E%3C/svg%3E">
-<style>html,body{margin:0;background:#020408}body{padding:10px;max-width:1400px;margin:0 auto}</style>
+<style>html,body{margin:0;background:#020408}body{padding:10px;max-width:1400px;margin:0 auto}
+@property --tmang{syntax:'<angle>';inherits:false;initial-value:0deg}
+#kpi{--kc:#19e68c;isolation:isolate}
+#kpi::before,#kpi::after{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--tmang),transparent 0deg,transparent 250deg,var(--kc) 320deg,#ffffff 340deg,var(--kc) 350deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:tmspin 10s linear infinite}
+#kpi::after{filter:blur(6px);opacity:.85;padding:3px}
+@keyframes tmspin{to{--tmang:360deg}}
+@media (prefers-reduced-motion:reduce){#kpi::before,#kpi::after{animation:none}}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="assets/dash-shim.js"></script>
 </head>
@@ -373,7 +384,7 @@ dash.calc('data_status', {
     if (!r) { el.textContent = '—'; return; }
     fn(el, r, m);
   });
-  ['k-country', 'pc-country', 'tp-country', 'vl-country'].forEach((n) => txt(n, (el, r) => { el.textContent = r.country_code + ' ' + NAMES[r.country_code] + ' · ' + ITEMS[TM.hs]; }));
+  ['k-country', 'pc-country', 'tp-country', 'vl-country'].forEach((n) => txt(n, (el, r) => { if (n === 'k-country') { const box = document.getElementById('kpi'); if (box) box.style.setProperty('--kc', COL[r.country_code]); } el.textContent = r.country_code + ' ' + NAMES[r.country_code] + ' · ' + ITEMS[TM.hs]; }));
   txt('k-price', (el, r, m) => { mark(el, 'price_usd_t', m, r.country_code); el.textContent = r.price_usd_t == null ? '—' : '$' + SD.fmtInt(r.price_usd_t); el.classList.toggle('dn', r.mom_price_pct < 0); });
   txt('k-note', (el, r) => { el.textContent = r.price_usd_t == null ? '수입 없음 또는 1톤 미만 소량 통관 — 단가 제외' : ''; });
   txt('k-mom', (el, r, m) => { mark(el, 'mom_price_pct', m, r.country_code); el.textContent = SD.fmtPct(r.mom_price_pct); signCls(el, r.mom_price_pct); });
