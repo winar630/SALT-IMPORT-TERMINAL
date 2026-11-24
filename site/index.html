@@ -511,8 +511,8 @@ dash.calc('data_status', {
           .style('filter', on ? `drop-shadow(0 0 4px ${col}) drop-shadow(0 0 12px ${col})` : `drop-shadow(0 0 4px ${col})`);
         node.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', col).style('font-size', '13px').style('font-weight', 800).style('font-family', 'inherit')
           .style('stroke', '#05080d').style('stroke-width', 3).style('paint-order', 'stroke').text(r.country_code);
-        node.append('text').attr('x', sz / 2 + 10).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
-        node.append('text').attr('x', sz / 2 + 10).attr('dy', '1.1em').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
+        node.append('text').attr('x', sz / 2 + 16).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
+        node.append('text').attr('x', sz / 2 + 16).attr('dy', '1.1em').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
         if (reduce && share > 0) pts.filter((_, k) => k % 8 === 4).forEach((q) => st.pg.append('circle').attr('cx', q[0]).attr('cy', q[1]).attr('r', 2.1).style('fill', col).style('opacity', on ? 0.9 : 0.3));
       });
       st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 46).style('fill', 'url(#tmcore)').style('opacity', 0.35);
