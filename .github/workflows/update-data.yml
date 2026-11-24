@@ -7,23 +7,31 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  update:
+  update-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: 관세청 API 수집
         env:
           KCS_SERVICE_KEY: ${{ secrets.KCS_SERVICE_KEY }}
         run: python scripts/fetch_kcs.py
+
       - name: 바뀐 자료 저장(commit)
         run: |
           git config user.name "salt-bot"
@@ -36,21 +44,6 @@ jobs:
             git push
           fi
 
-  deploy:
-    needs: update
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-      - run: git pull --ff-only || true
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
