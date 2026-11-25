@@ -483,23 +483,37 @@ dash.calc('data_status', {
       const m = curMonth(rows);
       const W = el.clientWidth || 500, H = 300;
       st.svg.attr('viewBox', `0 0 ${W} ${H}`);
-      const cx = W * 0.72, cy = H / 2;
+      const cx = W / 2, cy = H / 2;
+      const POS = { CN: [0.2, 0.14], PK: [0.1, 0.6], AU: [0.8, 0.86] };
       const rg = st.svg.append('defs').append('radialGradient').attr('id', 'tmcore');
       rg.append('stop').attr('offset', '0%').attr('stop-color', '#35d0ff').attr('stop-opacity', 0.9);
       rg.append('stop').attr('offset', '100%').attr('stop-color', '#35d0ff').attr('stop-opacity', 0);
       const rb = st.svg.select('defs').append('linearGradient').attr('id', 'tmrainbow').attr('x1', 0).attr('y1', 0).attr('x2', 1).attr('y2', 1);
       ['#ff4d5e', '#ffb020', '#ffe94d', '#19e68c', '#35d0ff', '#4d7bff', '#b07cff'].forEach((c, i, a) => rb.append('stop').attr('offset', (i / (a.length - 1)) * 100 + '%').attr('stop-color', c));
       if (!reduce) rb.append('animateTransform').attr('attributeName', 'gradientTransform').attr('type', 'rotate').attr('from', '0 .5 .5').attr('to', '360 .5 .5').attr('dur', '14s').attr('repeatCount', 'indefinite');
-      [30, 60, 95, 135].forEach((rr, i) => st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', rr).style('fill', 'none')
-        .style('stroke', 'url(#tmrainbow)').style('stroke-width', 1.4).style('stroke-opacity', 0.55 - i * 0.08)
-        .style('filter', 'drop-shadow(0 0 3px rgba(255,255,255,.18))'));
+      const RMAX = Math.min(W * 0.4, H * 0.46), RMIN = 26;
+      [0.3, 0.55, 0.8, 1].forEach((f) => st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', RMIN + (RMAX - RMIN) * f).style('fill', 'none')
+        .style('stroke', 'url(#tmrainbow)').style('stroke-width', 0.8).style('stroke-opacity', 0.16));
+      const NW = 5, DUR = 4.5;
+      d3.range(NW).forEach((i) => {
+        const c = st.svg.append('circle').attr('cx', cx).attr('cy', cy).style('fill', 'none').style('stroke', 'url(#tmrainbow)')
+          .style('filter', 'drop-shadow(0 0 4px rgba(255,255,255,.25))');
+        if (reduce) { c.attr('r', RMIN + (RMAX - RMIN) * (i + 1) / NW).style('stroke-width', 1.4).style('stroke-opacity', 0.5); return; }
+        const b = ((DUR / NW) * i).toFixed(2) + 's';
+        const an = (attr, vals, kt) => c.append('animate').attr('attributeName', attr).attr('values', vals).attr('keyTimes', kt).attr('dur', DUR + 's').attr('begin', b).attr('repeatCount', 'indefinite');
+        an('r', `${RMAX};${RMIN}`, '0;1').attr('calcMode', 'spline').attr('keySplines', '.45 0 .75 1');
+        an('stroke-opacity', '0;.75;.75;0', '0;.25;.8;1');
+        an('stroke-width', '0.8;2.2;3', '0;.7;1');
+      });
       const here = ORDER.map((c) => get(rows, m, c)).filter(Boolean);
       const maxW = d3.max(here, (r) => r.weight_t) || 0;
       const lp = st.svg.append('g');
       st.pg = st.svg.append('g');
       here.forEach((r, i) => {
-        const sx = W * 0.1, sy = H * (0.2 + 0.3 * i);
-        const path = d3.path(); path.moveTo(sx, sy); path.bezierCurveTo(W * 0.4, sy, W * 0.45, cy, cx, cy);
+        const ps = POS[r.country_code] || [0.1, 0.2 + 0.3 * i];
+        const sx = W * ps[0], sy = H * ps[1];
+        const mx = (sx + cx) / 2, my = (sy + cy) / 2, dx = cx - sx, dy = cy - sy;
+        const path = d3.path(); path.moveTo(sx, sy); path.quadraticCurveTo(mx - dy * 0.25, my + dx * 0.25, cx, cy);
         const on = r.country_code === TM.c;
         const col = COL[r.country_code];
         const share = maxW ? r.weight_t / maxW : 0;
@@ -516,8 +530,9 @@ dash.calc('data_status', {
           .style('filter', on ? `drop-shadow(0 0 4px ${col}) drop-shadow(0 0 12px ${col})` : `drop-shadow(0 0 4px ${col})`);
         node.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', col).style('font-size', '13px').style('font-weight', 800).style('font-family', 'inherit')
           .style('stroke', '#05080d').style('stroke-width', 3).style('paint-order', 'stroke').text(r.country_code);
-        node.append('text').attr('x', sz / 2 + 16).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
-        node.append('text').attr('x', sz / 2 + 16).attr('dy', '1.1em').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
+        const lx = ps[0] > 0.5 ? -(sz / 2 + 12) : sz / 2 + 16, la = ps[0] > 0.5 ? 'end' : 'start', ly = r.country_code === 'PK' ? -24 : 0;
+        node.append('text').attr('x', lx).attr('y', ly).attr('text-anchor', la).attr('dy', '-0.2em').style('fill', '#c9d4e1').style('font-size', '13px').style('font-weight', 700).style('font-family', 'inherit').text(SD.fmtInt(r.weight_t) + 'T');
+        node.append('text').attr('x', lx).attr('y', ly).attr('text-anchor', la).attr('dy', '1.1em').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(pr(r.price_usd_t) + ' $/T');
         if (reduce && share > 0) pts.filter((_, k) => k % 8 === 4).forEach((q) => st.pg.append('circle').attr('cx', q[0]).attr('cy', q[1]).attr('r', 2.1).style('fill', col).style('opacity', on ? 0.9 : 0.3));
       });
       st.svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 46).style('fill', 'url(#tmcore)').style('opacity', 0.35);
@@ -528,8 +543,8 @@ dash.calc('data_status', {
         .style('filter', 'drop-shadow(0 0 4px #35d0ff) drop-shadow(0 0 12px #35d0ff)');
       st.svg.append('text').attr('x', cx).attr('y', cy + 15.2).attr('text-anchor', 'middle').attr('dy', '0.35em').style('fill', '#35d0ff').style('font-size', '13px').style('font-weight', 800).style('font-family', 'inherit')
         .style('stroke', '#05080d').style('stroke-width', 3).style('paint-order', 'stroke').text('KR');
-      st.svg.append('text').attr('x', cx).attr('y', cy + 62).attr('text-anchor', 'middle').style('fill', '#c9d4e1').style('font-size', '14px').style('font-weight', 700).style('font-family', 'inherit').text(`TOTAL ${SD.fmtInt(d3.sum(here, (r) => r.weight_t))} T`);
-      st.svg.append('text').attr('x', cx).attr('y', cy + 80).attr('text-anchor', 'middle').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(m + ' · ' + ITEMS[TM.hs]);
+      st.svg.append('text').attr('x', W - 6).attr('y', 18).attr('text-anchor', 'end').style('fill', '#c9d4e1').style('font-size', '14px').style('font-weight', 700).style('font-family', 'inherit').text(`TOTAL ${SD.fmtInt(d3.sum(here, (r) => r.weight_t))} T`);
+      st.svg.append('text').attr('x', W - 6).attr('y', 36).attr('text-anchor', 'end').style('fill', '#7d8da0').style('font-size', '13px').style('font-family', 'inherit').text(m + ' · ' + ITEMS[TM.hs]);
       st.pg.raise();
       st.start();
     },
