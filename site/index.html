@@ -76,6 +76,11 @@
   50%{text-shadow:0 0 8px rgba(var(--gl),.55),0 0 22px rgba(var(--gl),.28)}}
 .tm-big.dn{color:var(--rd)}
 .tm-unit{color:var(--mu);font-size:11px}
+.tm-bigrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tm-fx{display:flex;flex-direction:column;line-height:1.25}
+.tm-fx b{font-size:17px;font-weight:700;color:var(--tx)}
+.tm-fx i{font-style:normal;font-size:10px;color:var(--mu)}
+.tm-fx:empty{display:none}
 .tm-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .tm-stat{border:1px solid var(--ln);border-radius:4px;padding:5px 7px}
 .tm-stat i{display:block;font-style:normal;color:var(--mu);font-size:10px;text-transform:uppercase}
@@ -141,7 +146,7 @@
   <div class="tm-grid">
     <section class="tm-p s4" id="kpi">
       <p class="tm-h"><span>UNIT PRICE · <b data-draw="k-country">—</b></span><span>USD / TON · CIF 기준</span></p>
-      <div class="tm-big" data-draw="k-price">—</div>
+      <div class="tm-bigrow"><div class="tm-big" data-draw="k-price">—</div><div class="tm-fx" data-draw="k-fx"></div></div>
       <div class="tm-note" data-draw="k-note"></div>
       <div class="tm-unit">전월 대비 <span data-draw="k-mom">—</span> · 전년 동월 대비 <span data-draw="k-yoy">—</span></div>
       <div class="tm-stats">
@@ -300,7 +305,7 @@ dash.calc('data_status', {
   if (!TM.c) TM.c = 'PK';
   if (!TM.hs) TM.hs = '2501001020';
   TM.m = TM.m || null;
-  const DRAWS = ['hs-name', 'ticker', 'sel-month', 'sel-note', 'scrub', 'play-label', 'k-country', 'k-price', 'k-note', 'k-mom', 'k-yoy', 'k-weight', 'k-value', 'k-momw', 'k-share', 'pc-country', 'price-chart', 'flow', 'tp-country', 'tape', 'heat', 'vl-country', 'vol'];
+  const DRAWS = ['hs-name', 'ticker', 'sel-month', 'sel-note', 'scrub', 'play-label', 'k-country', 'k-price', 'k-fx', 'k-note', 'k-mom', 'k-yoy', 'k-weight', 'k-value', 'k-momw', 'k-share', 'pc-country', 'price-chart', 'flow', 'tp-country', 'tape', 'heat', 'vl-country', 'vol'];
   const redraw = () => DRAWS.forEach((n) => dash.draw(n));
 
   const rowsAll = () => { const d = dash.data('monthly_all'); return d.status === 'ok' && Array.isArray(d.data) ? d.data.filter((r) => r.hs_code === TM.hs) : null; };
@@ -392,6 +397,18 @@ dash.calc('data_status', {
     fn(el, r, m);
   });
   ['k-country', 'pc-country', 'tp-country', 'vl-country'].forEach((n) => txt(n, (el, r) => { if (n === 'k-country') { const box = document.getElementById('kpi'); if (box) box.style.setProperty('--kc', COL[r.country_code]); } el.textContent = r.country_code + ' ' + NAMES[r.country_code] + ' · ' + ITEMS[TM.hs]; }));
+  TM.fx = TM.fx || null;
+  fetch('data/fx_usd.csv', { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((t) => {
+    const m = {}; d3.csvParse(t || 'month\n').forEach((r) => { const v = +r.usd_krw; if (r.month && v > 0) m[r.month] = { d: r.aply_date, v }; });
+    TM.fx = m; dash.draw('k-fx');
+  }).catch(() => { TM.fx = {}; });
+  txt('k-fx', (el, r, m) => {
+    const f = TM.fx && TM.fx[m]; el.replaceChildren(); if (!f) return;
+    const b = document.createElement('b'); b.textContent = '(₩' + d3.format(',.2f')(f.v) + ')';
+    const i = document.createElement('i'); i.textContent = '관세환율 · ' + f.d.slice(5).replace('-', '/') + ' 적용';
+    el.title = '관세청 수입 과세환율, ' + m + ' 첫 공표분(' + f.d + '부터 적용)' + (r.price_usd_t == null ? '' : ' · 톤당 약 ₩' + d3.format(',')(Math.round(r.price_usd_t * f.v)));
+    el.append(b, i);
+  });
   txt('k-price', (el, r, m) => { mark(el, 'price_usd_t', m, r.country_code); el.textContent = r.price_usd_t == null ? '—' : '$' + SD.fmtInt(r.price_usd_t); el.classList.toggle('dn', r.mom_price_pct < 0); });
   txt('k-note', (el, r) => { el.textContent = r.price_usd_t == null ? '수입 없음 또는 1톤 미만 소량 통관 — 단가 제외' : ''; });
   txt('k-mom', (el, r, m) => { mark(el, 'mom_price_pct', m, r.country_code); el.textContent = SD.fmtPct(r.mom_price_pct); signCls(el, r.mom_price_pct); });
